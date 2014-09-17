@@ -12,25 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module.exports = function() {
-    createQueueClient: function(namespace) {
-    	return {
-    		createQueue: function(path) {
-    			console.error('createQueue(path) has not been implemented yet.');
-    			return {};
-    		},
-    		deleteQueue: function(path) {
-    			console.error('deleteQueue(path) has not been implemented yet.')
-    			return {};
-    		},
-    		getQueue: function(path) {
-    			console.error('getQueue(path) has not been implemented yet.');
-    			return {};
-    		},
-    		listQueues: function() {
-    			console.error('listQueues() has not been implemented yet.');
-    			return {};
-    		}
-    	};
-    }
+function QueueClient(namespace)
+{
+	return {
+		createQueue: function(path) {
+			console.error('createQueue(path) has not been implemented yet.');
+			return {};
+		},
+		deleteQueue: function(path) {
+			console.error('deleteQueue(path) has not been implemented yet.')
+			return {};
+		},
+		getQueue: function(path) {
+			console.error('getQueue(path) has not been implemented yet.');
+			return {};
+		},
+		listQueues: function() {
+			console.error('listQueues() has not been implemented yet.');
+			return {};
+		}
+	};
 }
+
+module.exports.createQueueClient = function(namespace) {
+	var queueClient = new QueueClient(namespace);
+	return queueClient;
+};
+		

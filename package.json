@@ -1,10 +1,10 @@
 {
   "name": "tessel-azure-servicebus",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "An NPM package for Azure ServiceBus that is compatible with the Tessel (http://tessel.io) hardware development board.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/mitchdenny/tessel-azure-servicebus/issues"
   },
-  "homepage": "https://github.com/mitchdenny/tessel-azure-servicebus"
+  "homepage": "https://github.com/mitchdenny/tessel-azure-servicebus",
+  "devDependencies": {
+    "mocha": "^1.21.4"
+  }
 }
