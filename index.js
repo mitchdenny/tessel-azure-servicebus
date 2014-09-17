@@ -18,23 +18,19 @@ module.exports = function() {
     		createQueue: function(path) {
     			console.error('createQueue(path) has not been implemented yet.');
     			return {};
-    		};
-
+    		},
     		deleteQueue: function(path) {
     			console.error('deleteQueue(path) has not been implemented yet.')
     			return {};
-    		};
-
+    		},
     		getQueue: function(path) {
     			console.error('getQueue(path) has not been implemented yet.');
     			return {};
-    		};
-
+    		},
     		listQueues: function() {
     			console.error('listQueues() has not been implemented yet.');
     			return {};
-    		};
+    		}
     	};
-    };
     }
 }
