@@ -1,3 +1,6 @@
+# Configuration file containing secrets for testing.
+test/config.json
+
 # Logs
 logs
 *.log
