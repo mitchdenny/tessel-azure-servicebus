@@ -12,23 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+var https = require('https');
+var util = require('util');
+
 function QueueClient(namespace)
 {
+	var that = this;
+	that.namespace = namespace;
+	that.getDefaultHttpsRequestOptions = function(namespace, path) {
+		var options = {
+			hostname: util.format('%s.servicebus.windows.net', namespace),
+			path: util.format('/%s', path),
+			port: 443
+		};
+
+		return options;
+	};
+
 	return {
 		createQueue: function(path) {
-			console.error('createQueue(path) has not been implemented yet.');
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
 			return {};
 		},
 		deleteQueue: function(path) {
-			console.error('deleteQueue(path) has not been implemented yet.')
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
 			return {};
 		},
 		getQueue: function(path) {
-			console.error('getQueue(path) has not been implemented yet.');
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
 			return {};
 		},
 		listQueues: function() {
-			console.error('listQueues() has not been implemented yet.');
+
 			return {};
 		}
 	};

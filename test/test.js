@@ -14,11 +14,22 @@
 
 var tasb = require("../index.js");
 var assert = require('assert');
+
 describe('tessel-azure-servicebus', function(){
-	describe('#createQueueClient', function() {
-		it ('should return a QueueClient with a createQueue function.', function () {
-			var queueClient = tasb.createQueueClient('tasbunittest');
+	describe('#createQueueClient(namespace)', function() {
+		it('should return a QueueClient with a createQueue function.', function () {
+			var queueClient = tasb.createQueueClient('tessel-azure-servicebus');
 			assert(queueClient.createQueue != null, 'QueueClient does not contain a defintiion for createQueue.');
+		});
+	});
+
+	describe('ServiceBusQueueClient', function() {
+		describe('#createQueue(path)', function() {
+			it('should create a queue on the configured namespace.', function() {
+				var queueClient = tasb.createQueueClient('tessel-azure-servicebus');
+				var result = queueClient.createQueue('helloworld');
+				// TODO: Add assertion.
+			});
 		});
 	});
 });
