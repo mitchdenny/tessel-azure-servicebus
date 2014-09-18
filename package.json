@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/mitchdenny/tessel-azure-servicebus",
   "devDependencies": {
+    "azure": "^0.9.16",
     "grunt": "^0.4.5",
     "grunt-mocha-test": "^0.12.0",
     "grunt-release": "^0.7.0",
