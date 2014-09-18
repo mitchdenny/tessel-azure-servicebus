@@ -19,5 +19,6 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json')
   });
 
+  grunt.loadNpmTasks('grunt-release');
   grunt.registerTask('default', []);
 };
