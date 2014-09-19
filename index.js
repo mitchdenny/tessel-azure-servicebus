@@ -14,6 +14,7 @@
 
 var https = require('https');
 var util = require('util');
+var crypto = require('crypto');
 
 function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 {
@@ -22,37 +23,103 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 	that.sharedAccessKeyName = sharedAccessKeyName;
 	that.sharedAccessKey = sharedAccessKey;
 
-	that.getDefaultHttpsRequestOptions = function(namespace, path) {
+	that.getHttpsRequestOptions = function(method, namespace, path, sharedAccessKeyName, sharedAccessKey) {
+		var url = that.getUrlFromNamespaceAndPath(namespace, path);
+		var token = that.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
+
 		var options = {
 			hostname: util.format('%s.servicebus.windows.net', namespace),
 			path: util.format('/%s', path),
-			port: 443
+			port: 443,
+			method: method,
+			headers: {
+				'Authorization': token,
+				'Content-Type': 'application/atom+xml;type=entry;charset=utf-8'
+			}
 		};
 
 		return options;
 	};
 
+	that.getUrlFromNamespaceAndPath = function (namespace, path) {
+		var url = util.format('https://%s.servicebus.windows.net/%s', namespace, path);
+		return url;
+	};
+
+	that.generateSasToken = function(url, sharedAccessKeyName, sharedAccessKey)
+	{
+		var epoch = new Date().getTime();
+		var expiry = epoch + 3600;
+
+		var data = util.format('%s\n%s', url, epoch);
+		
+		var algorithm = crypto.createHmac('sha256', sharedAccessKey);
+		algorithm.update(data);
+		var signature = algorithm.digest('base64');
+		
+		var token = util.format(
+			'SharedAccessSignature sr=%s&sig=%s&se=%s&skn=%s',
+			encodeURIComponent(url),
+			encodeURIComponent(signature),
+			encodeURIComponent(expiry),
+			encodeURIComponent(sharedAccessKeyName)
+			);
+
+		return token;
+	};
+
 	return {
-		namespace: that.namespace,
-		sharedAccessKeyName: that.sharedAccessKeyName,
-		sharedAccessKey: that.sharedAccessKey,
+
+		getNamespace: function() {
+			return that.namespace;
+		},
+
+		getSharedAccessKeyName: function() {
+			return that.sharedAccessKeyName;
+		},
+
+		getSharedAccessKey: function() {
+			return that.sharedAccessKey;
+		},
 
 		createQueue: function(path, callback) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
-			callback(null);
+			var options = that.getHttpsRequestOptions(
+				'PUT',
+				namespace,
+				path,
+				that.sharedAccessKeyName,
+				that.sharedAccessKey
+				);
+			
+			var request = https.request(options, function (response) {
+				var result = {
+					response: response
+				};
+
+				callback(result);
+			}).on('error', function (error) {
+				var result = {
+					error: error
+				};
+
+				callback(result);
+			});
+
+			request.end();
 		},
 
 		deleteQueue: function(path, callback) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
+			var options = that.getHttpsRequestOptions('DELETE', that.namespace, path, that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		},
 
 		getQueue: function(path, callback) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
+			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, path, that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		},
 
 		listQueues: function(callback) {
+			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, '', that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		}
 	};

@@ -36,7 +36,7 @@ describe('tessel-azure-servicebus', function (){
 				config.sharedAccessKey
 				);
 
-			assert.equal(queueClient.namespace, config.namespace);
+			assert.equal(queueClient.getNamespace(), config.namespace);
 			done();
 		});
 
@@ -47,7 +47,7 @@ describe('tessel-azure-servicebus', function (){
 				config.sharedAccessKey
 				);
 
-			assert.equal(queueClient.sharedAccessKey, config.sharedAccessKey);
+			assert.equal(queueClient.getSharedAccessKey(), config.sharedAccessKey);
 			done();
 		});
 
@@ -58,7 +58,7 @@ describe('tessel-azure-servicebus', function (){
 				config.sharedAccessKey
 				);
 
-			assert.equal(queueClient.sharedAccessKeyName, config.sharedAccessKeyName);
+			assert.equal(queueClient.getSharedAccessKeyName(), config.sharedAccessKeyName);
 			done();
 		});
 	});
