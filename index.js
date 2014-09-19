@@ -36,7 +36,8 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 			headers: {
 				'Authorization': token,
 				'Content-Type': 'application/atom+xml;type=entry;charset=utf-8',
-				'Content-Length': contentLength
+				'Content-Length': contentLength,
+				'x-ms-version': '2014-05'
 			}
 		};
 
@@ -159,7 +160,22 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 
 		deleteQueue: function(path, callback) {
 			var options = that.getHttpsRequestOptions('DELETE', that.namespace, path, 0, that.sharedAccessKeyName, that.sharedAccessKey);
-			callback(null);
+			
+			var request = https.request(options, function (response) {
+				var result = {
+					response: response
+				};
+
+				callback(result);
+			}).on('error', function (error) {
+				var result = {
+					error: error
+				};
+
+				callback(result);
+			});
+
+			request.end();
 		},
 
 		getQueue: function(path, callback) {

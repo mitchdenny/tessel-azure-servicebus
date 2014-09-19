@@ -64,15 +64,29 @@ describe('tessel-azure-servicebus', function (){
 	});
 
 	describe('ServiceBusQueueClient', function () {
-		describe('#createQueue(path)', function () {
-			it('should create a queue on the configured namespace.', function (done) {
+		// describe('#createQueue(path)', function () {
+		// 	it('should create a queue on the configured namespace.', function (done) {
+		// 		var queueClient = tasb.createQueueClient(
+		// 			config.namespace,
+		// 			config.sharedAccessKeyName,
+		// 			config.sharedAccessKey
+		// 			);
+
+		// 		queueClient.createQueue('helloworld', function (result) {
+		// 			done();
+		// 		});
+		// 	});
+		// });
+
+		describe('#deleteQueue(path)', function () {
+			it('should delete the queue in the configured namespace.', function (done) {
 				var queueClient = tasb.createQueueClient(
 					config.namespace,
 					config.sharedAccessKeyName,
 					config.sharedAccessKey
 					);
 
-				queueClient.createQueue('helloworld', function (result) {
+				queueClient.deleteQueue('helloworld', function (result) {
 					done();
 				});
 			});
