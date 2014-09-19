@@ -15,6 +15,7 @@
 var https = require('https');
 var util = require('util');
 var crypto = require('crypto');
+var data2xml = require('data2xml');
 
 function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 {
@@ -23,7 +24,7 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 	that.sharedAccessKeyName = sharedAccessKeyName;
 	that.sharedAccessKey = sharedAccessKey;
 
-	that.getHttpsRequestOptions = function(method, namespace, path, sharedAccessKeyName, sharedAccessKey) {
+	that.getHttpsRequestOptions = function(method, namespace, path, contentLength, sharedAccessKeyName, sharedAccessKey) {
 		var url = that.getUrlFromNamespaceAndPath(namespace, path);
 		var token = that.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
 
@@ -34,7 +35,8 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 			method: method,
 			headers: {
 				'Authorization': token,
-				'Content-Type': 'application/atom+xml;type=entry;charset=utf-8'
+				'Content-Type': 'application/atom+xml;type=entry;charset=utf-8',
+				'Content-Length': contentLength
 			}
 		};
 
@@ -83,10 +85,57 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 		},
 
 		createQueue: function(path, callback) {
+
+			// var queueDescriptionEntry = {
+			// 	_attr: {
+			// 		'xmlns': 'http://www.w3.org/2005/Atom'
+			// 	},
+			// 	'content': {
+			// 		_attr: {
+			// 			'type': 'application/xml'
+			// 		},
+			// 		'QueueDescription': {
+			// 			_attr: {
+			// 				'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance',
+			// 				'xmlns': 'http://schemas.microsoft.com/netservices/2010/10/servicebus/connect'
+			// 			},
+			// 			'LockDuration': 'PT30',
+			// 			'MaxSizeInMegaBytes': 1024,
+			// 			'RequiresDuplicateDetection': false,
+			// 			'RequiresSession': false,
+			// 			'DefaultMessageTimeToLive': 'P10675199DT2H48M5.4775807S',
+			// 			'DeadLetteringOnMessageExpiration': false,
+			// 			'DuplicateDetectionHistoryTimeWindow': 'PT10M'
+			// 		}
+			// 	}
+			// };
+
+			var queueDescriptionEntry = {
+				_attr: {
+					'xmlns': 'http://www.w3.org/2005/Atom'
+				},
+				'content': {
+					_attr: {
+						'type': 'application/xml'
+					},
+					'QueueDescription': {
+						_attr: {
+							'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance',
+							'xmlns': 'http://schemas.microsoft.com/netservices/2010/10/servicebus/connect'
+						}
+					}
+				}
+			};
+
+			var converter = data2xml();
+			var content = converter('entry', queueDescriptionEntry);
+			var contentLength = Buffer.byteLength(content, 'utf8');
+
 			var options = that.getHttpsRequestOptions(
 				'PUT',
 				namespace,
 				path,
+				contentLength,
 				that.sharedAccessKeyName,
 				that.sharedAccessKey
 				);
@@ -105,21 +154,21 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 				callback(result);
 			});
 
-			request.end();
+			request.end(content, 'utf8');
 		},
 
 		deleteQueue: function(path, callback) {
-			var options = that.getHttpsRequestOptions('DELETE', that.namespace, path, that.sharedAccessKeyName, that.sharedAccessKey);
+			var options = that.getHttpsRequestOptions('DELETE', that.namespace, path, 0, that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		},
 
 		getQueue: function(path, callback) {
-			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, path, that.sharedAccessKeyName, that.sharedAccessKey);
+			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, path, 0, that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		},
 
 		listQueues: function(callback) {
-			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, '', that.sharedAccessKeyName, that.sharedAccessKey);
+			var options = that.getDefaultHttpsRequestOptions('GET', that.namespace, '', 0, that.sharedAccessKeyName, that.sharedAccessKey);
 			callback(null);
 		}
 	};

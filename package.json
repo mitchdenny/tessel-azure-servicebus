@@ -27,5 +27,8 @@
     "grunt-mocha-test": "^0.12.0",
     "grunt-release": "^0.7.0",
     "mocha": "^1.21.4"
+  },
+  "dependencies": {
+    "data2xml": "^1.1.0"
   }
 }
