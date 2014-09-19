@@ -1,6 +1,6 @@
 {
   "name": "tessel-azure-servicebus",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "An NPM package for Azure ServiceBus that is compatible with the Tessel (http://tessel.io) hardware development board.",
   "main": "index.js",
   "scripts": {
