@@ -15,10 +15,13 @@
 var https = require('https');
 var util = require('util');
 
-function QueueClient(namespace)
+function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 {
 	var that = this;
 	that.namespace = namespace;
+	that.sharedAccessKeyName = sharedAccessKeyName;
+	that.sharedAccessKey = sharedAccessKey;
+
 	that.getDefaultHttpsRequestOptions = function(namespace, path) {
 		var options = {
 			hostname: util.format('%s.servicebus.windows.net', namespace),
@@ -30,27 +33,33 @@ function QueueClient(namespace)
 	};
 
 	return {
-		createQueue: function(path) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
-			return {};
-		},
-		deleteQueue: function(path) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
-			return {};
-		},
-		getQueue: function(path) {
-			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
-			return {};
-		},
-		listQueues: function() {
+		namespace: that.namespace,
+		sharedAccessKeyName: that.sharedAccessKeyName,
+		sharedAccessKey: that.sharedAccessKey,
 
-			return {};
+		createQueue: function(path, callback) {
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
+			callback(null);
+		},
+
+		deleteQueue: function(path, callback) {
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
+			callback(null);
+		},
+
+		getQueue: function(path, callback) {
+			var options = that.getDefaultHttpsRequestOptions(that.namespace, path);
+			callback(null);
+		},
+
+		listQueues: function(callback) {
+			callback(null);
 		}
 	};
 }
 
-module.exports.createQueueClient = function(namespace) {
-	var queueClient = new QueueClient(namespace);
+module.exports.createQueueClient = function(namespace, sharedAccessKeyName, sharedAccessKey) {
+	var queueClient = new QueueClient(namespace, sharedAccessKeyName, sharedAccessKey);
 	return queueClient;
 };
 		

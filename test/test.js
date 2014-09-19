@@ -14,21 +14,67 @@
 
 var tasb = require("../index.js");
 var assert = require('assert');
+var config = require('./config.json');
 
-describe('tessel-azure-servicebus', function(){
-	describe('#createQueueClient(namespace)', function() {
-		it('should return a QueueClient with a createQueue function.', function () {
-			var queueClient = tasb.createQueueClient('tessel-azure-servicebus');
+describe('tessel-azure-servicebus', function (){
+	describe('#createQueueClient(namespace)', function () {
+		it('should return a QueueClient with a createQueue function.', function (done) {
+			var queueClient = tasb.createQueueClient(
+				config.namespace,
+				config.sharedAccessKeyName,
+				config.sharedAccessKey
+				);
+
 			assert(queueClient.createQueue != null, 'QueueClient does not contain a defintiion for createQueue.');
+			done();
+		});
+
+		it('should have a namespace that is set according to config.', function (done) {
+			var queueClient = tasb.createQueueClient(
+				config.namespace,
+				config.sharedAccessKeyName,
+				config.sharedAccessKey
+				);
+
+			assert.equal(queueClient.namespace, config.namespace);
+			done();
+		});
+
+		it('should have a sharedAccessKey that is set according to config.', function (done) {
+			var queueClient = tasb.createQueueClient(
+				config.namespace,
+				config.sharedAccessKeyName,
+				config.sharedAccessKey
+				);
+
+			assert.equal(queueClient.sharedAccessKey, config.sharedAccessKey);
+			done();
+		});
+
+		it('should have a sharedAccessKeyName that is set according to config.', function (done) {
+			var queueClient = tasb.createQueueClient(
+				config.namespace,
+				config.sharedAccessKeyName,
+				config.sharedAccessKey
+				);
+
+			assert.equal(queueClient.sharedAccessKeyName, config.sharedAccessKeyName);
+			done();
 		});
 	});
 
-	describe('ServiceBusQueueClient', function() {
-		describe('#createQueue(path)', function() {
-			it('should create a queue on the configured namespace.', function() {
-				var queueClient = tasb.createQueueClient('tessel-azure-servicebus');
-				var result = queueClient.createQueue('helloworld');
-				// TODO: Add assertion.
+	describe('ServiceBusQueueClient', function () {
+		describe('#createQueue(path)', function () {
+			it('should create a queue on the configured namespace.', function (done) {
+				var queueClient = tasb.createQueueClient(
+					config.namespace,
+					config.sharedAccessKeyName,
+					config.sharedAccessKey
+					);
+
+				queueClient.createQueue('helloworld', function (result) {
+					done();
+				});
 			});
 		});
 	});
