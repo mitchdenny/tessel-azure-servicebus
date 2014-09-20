@@ -25,7 +25,7 @@ describe('tessel-azure-servicebus', function (){
 				config.sharedAccessKey
 				);
 
-			assert(queueClient.createQueue != null, 'QueueClient does not contain a defintiion for createQueue.');
+			assert(queueClient.createQueue != null);
 			done();
 		});
 
@@ -63,20 +63,34 @@ describe('tessel-azure-servicebus', function (){
 		});
 	});
 
-	describe('ServiceBusQueueClient', function () {
-		// describe('#createQueue(path)', function () {
-		// 	it('should create a queue on the configured namespace.', function (done) {
-		// 		var queueClient = tasb.createQueueClient(
-		// 			config.namespace,
-		// 			config.sharedAccessKeyName,
-		// 			config.sharedAccessKey
-		// 			);
+	describe('SecurityHelper', function() {
+		describe('#generateSasToken', function () {
+			it('should match a previously generated token from the supported Azure package.', function(done) {
+				throw 'Test not implemented';
+			});
+		});		
 
-		// 		queueClient.createQueue('helloworld', function (result) {
-		// 			done();
-		// 		});
-		// 	});
-		// });
+		describe('#requestWrapToken', function () {
+			it('should return a valid token from ACS.', function(done) {
+				throw 'Test not implemented';
+			});
+		});
+	});
+
+	describe('QueueClient', function () {
+		describe('#createQueue(path)', function () {
+			it('should create a queue on the configured namespace.', function (done) {
+				var queueClient = tasb.createQueueClient(
+					config.namespace,
+					config.sharedAccessKeyName,
+					config.sharedAccessKey
+					);
+
+				queueClient.createQueue('helloworld', function (result) {
+					done();
+				});
+			});
+		});
 
 		describe('#deleteQueue(path)', function () {
 			it('should delete the queue in the configured namespace.', function (done) {
