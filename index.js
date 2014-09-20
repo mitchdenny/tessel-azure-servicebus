@@ -38,6 +38,26 @@ function SecurityHelper()
 	var that = this;
 
 	return {
+		generateSasToken: function(url, sharedAccessKeyName, sharedAccessKey) {
+			var epochTime = new Date().getTime();
+			var expiryTime = epochTime + 3600;
+
+			var data = util.format('%s\n%s', encodeURIComponent(url), expiryTime);
+			
+			var algorithm = crypto.createHmac('sha256', sharedAccessKey);
+			algorithm.update(data);
+			var signature = algorithm.digest('base64');
+			
+			var token = util.format(
+				'SharedAccessSignature sr=%s&sig=%s&se=%s&skn=%s',
+				encodeURIComponent(url),
+				encodeURIComponent(signature),
+				encodeURIComponent(expiryTime),
+				encodeURIComponent(sharedAccessKeyName)
+				);
+
+			return token;
+		}
 	};
 }
 
@@ -54,15 +74,29 @@ function Queue(path, queueClient)
 	that.queueClient = queueClient;
 
 	return {
+		/**
+		 * Returns the path that this queue is associated with.
+		 * @function
+		 */
 		getPath: function() {
 			return that.path;
 		},
 
+		/**
+		 * Returns the {QueueClient} that this queue is associated with.
+		 * @function
+		 */
 		getQueueClient: function() {
 			return that.queueClient;
 		},
 
-		sendMessage: function(message, callback) {
+		/**
+		 * Sends
+		 * @function
+		 * @param {BrokeredMessage} message - The message that you want to send.
+		 * @param {function} callback - A callback that is called when the message is sent.
+		 */
+		 sendMessage: function(message, callback) {
 			callback();
 		},
 
@@ -102,13 +136,14 @@ function Queue(path, queueClient)
 function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 {
 	var that = this;
+	that.securityHelper = new SecurityHelper();
 	that.namespace = namespace;
 	that.sharedAccessKeyName = sharedAccessKeyName;
 	that.sharedAccessKey = sharedAccessKey;
 
 	that.getHttpsRequestOptions = function(method, namespace, path, contentLength, sharedAccessKeyName, sharedAccessKey) {
 		var url = that.getUrlFromNamespaceAndPath(namespace, path);
-		var token = that.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
+		var token = that.securityHelper.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
 
 		var options = {
 			hostname: util.format('%s.servicebus.windows.net', namespace),
@@ -131,27 +166,7 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 		return url;
 	};
 
-	that.generateSasToken = function(url, sharedAccessKeyName, sharedAccessKey)
-	{
-		var epochTime = new Date().getTime();
-		var expiryTime = epochTime + 3600;
 
-		var data = util.format('%s\n%s', encodeURIComponent(url), expiryTime);
-		
-		var algorithm = crypto.createHmac('sha256', sharedAccessKey);
-		algorithm.update(data);
-		var signature = algorithm.digest('base64');
-		
-		var token = util.format(
-			'SharedAccessSignature sr=%s&sig=%s&se=%s&skn=%s',
-			encodeURIComponent(url),
-			encodeURIComponent(signature),
-			encodeURIComponent(expiryTime),
-			encodeURIComponent(sharedAccessKeyName)
-			);
-
-		return token;
-	};
 
 	return {
 
