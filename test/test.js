@@ -14,7 +14,17 @@
 
 var tasb = require("../index.js");
 var assert = require('assert');
-var config = require('./config.json');
+var fs = require('fs');
+
+if (fs.existsSync('./config.json')) {
+	var config = require('./config.json');
+} else {
+	var config = {
+		namespace: process.env.TESSEL_AZURE_SERVICEBUS_NAMESPACE,
+		sharedAccessKeyName: process.env.TESSEL_AZURE_SERVICEBUS_SHAREDACCESSKEYNAME,
+		sharedAccessKey: process.env.TESSEL_AZURE_SERVICEBUS_SHAREDACCESSKEY
+	};
+}
 
 describe('tessel-azure-servicebus', function (){
 	describe('#createQueueClient(namespace)', function () {
