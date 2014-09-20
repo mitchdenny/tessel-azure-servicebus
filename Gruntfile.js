@@ -24,12 +24,22 @@ module.exports = function(grunt) {
         },
         src: ['test/**/*.js']
       }
+    },
+    jsdoc: {
+      dist: {
+        src: ['index.js'],
+        options: { 
+          destination: 'doc'
+        }
+      }
     }
   });
 
+  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-release');
 
+  grunt.registerTask('doc', ['jsdoc']);
   grunt.registerTask('test', ['mochaTest']);
-  grunt.registerTask('default', ['mochaTest']);
+  grunt.registerTask('default', ['doc', 'test']);
 };
