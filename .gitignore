@@ -1,3 +1,6 @@
+# Ignore random OSX files.
+.DS_Store
+
 # Configuration file containing secrets for testing.
 test/config.json
 
