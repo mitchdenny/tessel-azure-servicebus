@@ -1,5 +1,3 @@
 language: node_js
- "scripts": {
- 	"test": "grunt test"
- }
-
+node_js:
+  - 0.10
