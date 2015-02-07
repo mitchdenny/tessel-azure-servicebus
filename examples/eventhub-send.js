@@ -11,7 +11,7 @@ var event = {
   'distance': 30
 };
 
-client.sentEvent(event, function(err) {
+client.sendEvent(event, function(err) {
   if (err) {
     console.log(err);
     return;
