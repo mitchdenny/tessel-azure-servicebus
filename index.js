@@ -30,14 +30,25 @@ function SecurityHelper()
 	};
 }
 
-function EventHubClient(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey)
+function EventHubClient(namespace, eventHubPath, deviceId, sharedAccessKeyName, sharedAccessKey)
 {
 	var self = this;
 	self.securityHelper = new SecurityHelper();
 	self.namespace = namespace;
 	self.eventHubPath = eventHubPath;
+	self.deviceId = deviceId;
 	self.sharedAccessKeyName = sharedAccessKeyName;
 	self.sharedAccessKey = sharedAccessKey;
+
+	self.getPathFromEventHubPathAndDeviceId = function (eventHubPath, deviceId) {
+		var path = util.format('%s/publishers/%s/messages', eventHubPath, deviceId);
+		return path;
+	};
+
+	self.getUrlFromNamespaceAndPath = function (namespace, path) {
+		var url = util.format('https://%s.servicebus.windows.net/%s', namespace, path);
+		return url;
+	};
 
 	self.getHttpsRequestOptions = function(method, namespace, path, contentLength, sharedAccessKeyName, sharedAccessKey) {
 		var url = self.getUrlFromNamespaceAndPath(namespace, path);
@@ -52,29 +63,36 @@ function EventHubClient(namespace, eventHubPath, sharedAccessKeyName, sharedAcce
 				'Authorization': token,
 				'Content-Type': 'application/atom+xml;type=entry;charset=utf-8',
 				'Content-Length': contentLength,
-				'x-ms-version': '2014-05'
 			}
 		};
 
 		return options;
 	};
 
-	self.getUrlFromNamespaceAndPath = function (namespace, path) {
-		var url = util.format('https://%s.servicebus.windows.net/%s', namespace, path);
-		return url;
-	};
-
 	return {
 		sendEvent: function (event, callback) {
-			var url = self.getUrlFromNamespaceAndPath(self.namespace, self.path);
-			console.log(url);
-			
+			var path = self.getPathFromEventHubPathAndDeviceId(
+				self.eventHubPath,
+				self.deviceId
+			);
+
+			var options = self.getHttpsRequestOptions(
+				'POST',
+				self.namespace,
+				path,
+				0,
+				self.sharedAccessKeyName,
+				self.sharedAccessKey
+			);
+
+			console.log(options);
+
 			callback(null);
 		}
 	};
 }
 
-module.exports.createEventHubClient = function(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey) {
-	var eventHubClient = new EventHubClient(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey);
+module.exports.createEventHubClient = function(namespace, eventHubPath, deviceId, sharedAccessKeyName, sharedAccessKey) {
+	var eventHubClient = new EventHubClient(namespace, eventHubPath, deviceId, sharedAccessKeyName, sharedAccessKey);
 	return eventHubClient;
 };

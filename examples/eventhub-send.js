@@ -2,6 +2,7 @@ var tasb = require('../index');
 var client = tasb.createEventHubClient(
   'namespace',
   'eventHubPath',
+  'tanker1',
   'sharedAccessKeyName',
   'sharedAccessKey'
 );
