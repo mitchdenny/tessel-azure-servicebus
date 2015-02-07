@@ -1,4 +1,3 @@
-doc/
-test/
+examples/
 Gruntfile.js
 .git*

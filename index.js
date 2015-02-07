@@ -1,41 +1,10 @@
-// Copyright 2014 Mitch Denny
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 var https = require('https');
 var util = require('util');
 var crypto = require('crypto');
-var data2xml = require('data2xml');
 
-/**
- * Represents a message from a queue/topic.
- * @constructor
- */
-function BrokeredMessage()
-{
-	var that = this;
-
-	return {
-	};
-}
-
-/**
- * Supports generating SAS and WRAP tokens.
- * @constructor
- */
 function SecurityHelper()
 {
-	var that = this;
+	var self = this;
 
 	return {
 		generateSasToken: function(url, sharedAccessKeyName, sharedAccessKey) {
@@ -43,11 +12,11 @@ function SecurityHelper()
 			var expiryTime = epochTime + 3600;
 
 			var data = util.format('%s\n%s', encodeURIComponent(url), expiryTime);
-			
+
 			var algorithm = crypto.createHmac('sha256', sharedAccessKey);
 			algorithm.update(data);
 			var signature = algorithm.digest('base64');
-			
+
 			var token = util.format(
 				'SharedAccessSignature sr=%s&sig=%s&se=%s&skn=%s',
 				encodeURIComponent(url),
@@ -61,89 +30,18 @@ function SecurityHelper()
 	};
 }
 
-/**
- * Represents a ServiceBus Queue.
- * @constructor
- * @param {string} path - The URL suffix which points to the queue or topic (e.g. helloworld).
- * @param {QueueClient} queueClient - A reference to a QueueClient instance.
- */
-function Queue(path, queueClient)
+function EventHubClient(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey)
 {
-	var that = this;
-	that.path = path;
-	that.queueClient = queueClient;
+	var self = this;
+	self.securityHelper = new SecurityHelper();
+	self.namespace = namespace;
+	self.eventHubPath = eventHubPath;
+	self.sharedAccessKeyName = sharedAccessKeyName;
+	self.sharedAccessKey = sharedAccessKey;
 
-	return {
-		/**
-		 * Returns the path that this queue is associated with.
-		 * @function
-		 */
-		getPath: function() {
-			return that.path;
-		},
-
-		/**
-		 * Returns the {QueueClient} that this queue is associated with.
-		 * @function
-		 */
-		getQueueClient: function() {
-			return that.queueClient;
-		},
-
-		/**
-		 * Sends
-		 * @function
-		 * @param {BrokeredMessage} message - The message that you want to send.
-		 * @param {function} callback - A callback that is called when the message is sent.
-		 */
-		 sendMessage: function(message, callback) {
-			callback();
-		},
-
-		sendMessageBatch: function(messages, callback) {
-			callback();
-		},
-
-		receiveMessage: function(callback) {
-			callback();
-		},
-
-		peekMessage: function(callback)	{
-			callback();
-		},
-
-		unlockMessage: function(messageId, sequenceNumber, lockToken, callback)	{
-			callback();
-		},
-
-		deleteMessage: function(messageId, sequenceNumber, lockToken, callback)	{
-			callback();
-		},
-
-		renewMessageLock: function(messageId, sequenceNumber, lockToken, callback) {
-			callback();
-		}
-	};
-}
-
-/**
- * Represents a client for managing a namespace.
- * @constructor
- * @param {string} namespace - The ServiceBus namespace that this client manages.
- * @param {string} sharedAccessKeyName - The name of the shared access key with rights to manage this namespace.
- * @param {string} sharedAccessKey - The actual shared access key associated to the sharedAccessKeyName with rights to manage this namespace.
- */
-function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
-{
-	var that = this;
-	that.securityHelper = new SecurityHelper();
-	that.namespace = namespace;
-	that.sharedAccessKeyName = sharedAccessKeyName;
-	that.sharedAccessKey = sharedAccessKey;
-
-	that.getHttpsRequestOptions = function(method, namespace, path, contentLength, sharedAccessKeyName, sharedAccessKey) {
-		var url = that.getUrlFromNamespaceAndPath(namespace, path);
-		var token = that.securityHelper.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
+	self.getHttpsRequestOptions = function(method, namespace, path, contentLength, sharedAccessKeyName, sharedAccessKey) {
+		var url = self.getUrlFromNamespaceAndPath(namespace, path);
+		var token = self.securityHelper.generateSasToken(url, sharedAccessKeyName, sharedAccessKey);
 
 		var options = {
 			hostname: util.format('%s.servicebus.windows.net', namespace),
@@ -161,134 +59,22 @@ function QueueClient(namespace, sharedAccessKeyName, sharedAccessKey)
 		return options;
 	};
 
-	that.getUrlFromNamespaceAndPath = function (namespace, path) {
+	self.getUrlFromNamespaceAndPath = function (namespace, path) {
 		var url = util.format('https://%s.servicebus.windows.net/%s', namespace, path);
 		return url;
 	};
 
-
-
 	return {
-
-		getNamespace: function() {
-			return that.namespace;
-		},
-
-		getSharedAccessKeyName: function() {
-			return that.sharedAccessKeyName;
-		},
-
-		getSharedAccessKey: function() {
-			return that.sharedAccessKey;
-		},
-
-		createQueue: function(path, callback) {
-			var queueDescriptionEntry = {
-				_attr: {
-					'xmlns': 'http://www.w3.org/2005/Atom'
-				},
-				'content': {
-					_attr: {
-						'type': 'application/xml'
-					},
-					'QueueDescription': {
-						_attr: {
-							'xmlns:i': 'http://www.w3.org/2001/XMLSchema-instance',
-							'xmlns': 'http://schemas.microsoft.com/netservices/2010/10/servicebus/connect'
-						}
-					}
-				}
-			};
-
-			var converter = data2xml();
-			var content = converter('entry', queueDescriptionEntry);
-			var contentLength = Buffer.byteLength(content, 'utf8');
-
-			var options = that.getHttpsRequestOptions(
-				'PUT',
-				namespace,
-				path,
-				contentLength,
-				that.sharedAccessKeyName,
-				that.sharedAccessKey
-				);
+		sendEvent: function (event, callback) {
+			var url = self.getUrlFromNamespaceAndPath(self.namespace, self.path);
+			console.log(url);
 			
-			var request = https.request(options, function (response) {
-				var result = {
-					response: response
-				};
-
-				callback(result);
-			}).on('error', function (error) {
-				var result = {
-					error: error
-				};
-
-				callback(result);
-			});
-
-			request.end(content, 'utf8');
-		},
-
-		deleteQueue: function(path, callback) {
-			var options = that.getHttpsRequestOptions(
-				'DELETE', 
-				that.namespace, 
-				path, 0, 
-				that.sharedAccessKeyName, 
-				that.sharedAccessKey
-				);
-			
-			var request = https.request(options, function (response) {
-				var result = {
-					response: response
-				};
-
-				callback(result);
-			}).on('error', function (error) {
-				var result = {
-					error: error
-				};
-
-				callback(result);
-			});
-
-			request.end();
-		},
-
-		getQueue: function(path, callback) {
-			var options = that.getDefaultHttpsRequestOptions(
-				'GET',
-				that.namespace,
-				path,
-				0,
-				that.sharedAccessKeyName,
-				that.sharedAccessKey
-				);
-
-			callback(null);
-		},
-
-		listQueues: function(callback) {
-			var options = that.getDefaultHttpsRequestOptions(
-				'GET',
-				that.namespace,
-				'',
-				0, 
-				that.sharedAccessKeyName, 
-				that.sharedAccessKey);
 			callback(null);
 		}
 	};
 }
 
-module.exports.QueueClient = QueueClient;
-module.exports.SecurityHelper = SecurityHelper;
-module.exports.Queue = Queue;
-module.exports.BrokeredMessage = BrokeredMessage;
-
-module.exports.createQueueClient = function(namespace, sharedAccessKeyName, sharedAccessKey) {
-	var queueClient = new QueueClient(namespace, sharedAccessKeyName, sharedAccessKey);
-	return queueClient;
+module.exports.createEventHubClient = function(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey) {
+	var eventHubClient = new EventHubClient(namespace, eventHubPath, sharedAccessKeyName, sharedAccessKey);
+	return eventHubClient;
 };
-		
